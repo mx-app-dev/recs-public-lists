@@ -1,206 +1,297 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Keeps the link's token out of the requests this page makes (for example, cover images). -->
-  <meta name="referrer" content="no-referrer">
-  <!-- Public lists are for the people who have the link, not for search engines. -->
-  <meta name="robots" content="noindex">
-  <title>Shared list</title>
-  <style>
-    body {
-      font-family: -apple-system, system-ui, sans-serif;
-      margin: 0;
-      padding: 24px 16px;
-      background: #f2f2f7;
-      color: #1c1c1e;
-    }
-    main { max-width: 560px; margin: 0 auto; }
-    h1 { font-size: 1.6rem; margin: 0 0 4px; }
-    .note { color: #6e6e73; font-size: 0.95rem; margin: 0 0 20px; }
-    .status {
-      padding: 16px;
-      background: #fff;
-      border-radius: 12px;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    li {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      padding: 12px 16px;
-      border-top: 1px solid #e5e5ea;
-    }
-    li:first-child { border-top: 0; }
-    img {
-      width: 40px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 4px;
-      background: #d1d1d6;
-      flex: none;
-    }
-    .title { font-weight: 600; }
-    .meta { color: #6e6e73; font-size: 0.9rem; }
-    .public-note { margin-top: 6px; font-size: 0.95rem; }
-    [hidden] { display: none !important; }
-    .actions { display: flex; flex-direction: column; gap: 10px; margin: 0 0 20px; }
-    .button {
-      display: block;
-      min-height: 44px;
-      line-height: 44px;
-      padding: 0 18px;
-      border-radius: 999px;
-      background: #4F7A64;
-      color: #fff;
-      font-weight: 600;
-      text-align: center;
-      text-decoration: none;
-    }
-    @media (prefers-color-scheme: dark) {
-      body { background: #000; color: #f2f2f7; }
-      .note, .meta { color: #98989d; }
-      .status, ul { background: #1c1c1e; }
-      li { border-top-color: #38383a; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- The link's token is in the address; this stops it being sent to the images the page loads. -->
+<meta name="referrer" content="no-referrer">
+<!-- Public lists are for the people who have the link, not for search engines. -->
+<meta name="robots" content="noindex">
+<title>Shared list · Recs2</title>
+<style>
+:root,[data-theme="shared"]{
+  --bg:#F4F1EA; --surface:#FFFFFF; --border:#E4DFD3; --chip-border:#D6D0C2;
+  --text:#1F2A24; --text-2:#3E4A43; --muted:#5E6B63;
+  --accent:#4F7A64; --accent-soft:#DCE7DF; --accent-ink:#2C4A3B;
+  --tile:#EEF3EE; --cta-bg:#E2EBE3; --link:#3F6652; --link-hover:#2C4A3B;
+  --header-bg:rgba(244,241,234,.92);
+}
+[data-theme="collab"]{
+  --bg:#F3F1F8; --border:#E3DFEF; --chip-border:#D9D4E8;
+  --text:#221F33; --text-2:#3A3552; --muted:#615C78;
+  --accent:#5B4FC4; --accent-soft:#E4E0F7; --accent-ink:#352C8A;
+  --cta-bg:#E7E3F6; --link:#4A3FB0; --link-hover:#352C8A;
+  --header-bg:rgba(243,241,248,.92);
+}
+[hidden]{display:none !important}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:16px/1.45 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif}
+a{color:var(--link)} a:hover{color:var(--link-hover)}
+.page{max-width:480px;margin:0 auto;padding-bottom:env(safe-area-inset-bottom)}
+.top{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;
+  padding:12px 16px;background:var(--header-bg);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--text);font-weight:700}
+.mark{width:26px;height:26px;border-radius:8px;background:var(--accent);color:#fff;
+  display:grid;place-items:center;font-size:14px}
+.btn{min-height:44px;padding:0 18px;border:0;border-radius:999px;background:var(--accent);
+  color:#fff;font:600 15px/1 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.btn:hover{color:#fff}
+main{padding:24px 16px 8px;display:flex;flex-direction:column;gap:22px}
+.hero{display:flex;flex-direction:column;gap:10px}
+.badge{align-self:flex-start;padding:4px 10px;border-radius:999px;background:var(--accent-soft);
+  color:var(--accent-ink);font-size:13px;font-weight:600}
+h1{margin:0;font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-.02em}
+.owner{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--muted)}
+.owner strong{color:var(--text)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink);
+  display:grid;place-items:center;font-size:12px;font-weight:700}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:0 16px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--chip-border);
+  background:var(--surface);color:var(--text);font:500 14px/1 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--text);border-color:var(--text);color:#fff;font-weight:600}
+.items{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:14px;
+  display:flex;gap:12px;align-items:flex-start}
+.tile{flex:none;width:46px;height:46px;border-radius:14px;background:var(--tile);
+  display:grid;place-items:center;font-size:24px}
+.body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.card h2{margin:0;font-size:17px;font-weight:700}
+.meta{font-size:13px;color:var(--muted)}
+.note{margin:4px 0 0;font-size:15px;color:var(--text-2)}
+.cta{background:var(--cta-bg);border-radius:22px;padding:22px 18px;display:flex;flex-direction:column;
+  gap:12px;text-align:center;align-items:center}
+.cta .emoji{font-size:30px}
+.cta h2{margin:0;font-size:20px;font-weight:800}
+.cta p{margin:0;font-size:15px;color:var(--text-2)}
+.cta .btn{width:100%;min-height:50px;font-size:16px;font-weight:700}
+.status{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;margin:0;color:var(--text-2)}
+.hint{font-size:13px;color:var(--muted);margin:0}
+footer{padding:20px 16px 36px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 20px;font-size:13px}
+footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
+</style>
 </head>
-<body>
+<body data-theme="shared">
+<div class="page">
+  <header class="top">
+    <a class="brand" href="/"><span class="mark" aria-hidden="true">✦</span>Recs2</a>
+    <a id="open-app" class="btn" href="#">Subscribe</a>
+  </header>
+
   <main>
-    <h1 id="list-title">Shared list</h1>
-    <p class="note">Read only. Anyone with this link can see the list.</p>
-    <div id="actions" class="actions" hidden>
-      <a id="open-app" class="button" href="#">Open in Recs2</a>
-      <a id="get-app" class="button" hidden>Get Recs2 on the App Store</a>
-      <p id="app-note" class="note" hidden></p>
-    </div>
+    <noscript><p class="status">This page needs JavaScript to show the list.</p></noscript>
     <p id="status" class="status" hidden></p>
-    <ul id="items"></ul>
+
+    <section id="content" class="hero" hidden>
+      <span id="badge" class="badge" hidden></span>
+      <h1 id="title"></h1>
+      <div class="owner"><span class="avatar" id="initials" aria-hidden="true"></span><span id="owner"></span></div>
+    </section>
+
+    <nav id="chips" class="chips" aria-label="Filter by category" hidden></nav>
+
+    <ul id="items" class="items" hidden></ul>
+
+    <section id="cta" class="cta" hidden>
+      <span class="emoji" aria-hidden="true">🔔</span>
+      <h2>Don't miss new titles</h2>
+      <p id="cta-text"></p>
+      <a id="open-app-cta" class="btn" href="#">Subscribe</a>
+    </section>
+
+    <p id="app-note" class="hint" hidden></p>
   </main>
 
-  <script src="../config.js"></script>
-  <script>
-    (() => {
-      const titleEl = document.getElementById('list-title');
-      const statusEl = document.getElementById('status');
-      const listEl = document.getElementById('items');
-      const config = window.PUBLIC_LIST_CONFIG || {};
+  <footer>
+    <a id="report" href="mailto:mrichter.appdev@gmail.com?subject=Report%20a%20shared%20list">Report this list</a>
+    <a href="mailto:mrichter.appdev@gmail.com">Contact</a>
+  </footer>
+</div>
 
-      // Opening the app: the browser asks first. If this page is still visible a moment after the click, the app is
-      // probably not installed, so the App Store button appears. A visit that leaves the page cancels the fallback.
-      let fallbackTimer = null;
-      function offerAppStore() {
-        if (config.appStoreUrl) {
-          const getApp = document.getElementById('get-app');
-          getApp.href = config.appStoreUrl;
-          getApp.hidden = false;
-        } else {
-          const note = document.getElementById('app-note');
-          note.textContent = "Recs2 isn't in the App Store yet.";
-          note.hidden = false;
-        }
-      }
-      function showActions(token) {
-        const actions = document.getElementById('actions');
-        const openApp = document.getElementById('open-app');
-        openApp.href = 'recs2://list?t=' + encodeURIComponent(token);
-        openApp.addEventListener('click', () => {
-          clearTimeout(fallbackTimer);
-          fallbackTimer = setTimeout(() => {
-            if (!document.hidden) offerAppStore();
-          }, 1500);
-        });
-        document.addEventListener('visibilitychange', () => {
-          if (document.hidden) clearTimeout(fallbackTimer);
-        });
-        actions.hidden = false;
-      }
+<script src="../config.js"></script>
+<script>
+(() => {
+  const config = window.PUBLIC_LIST_CONFIG || {};
+  const $ = (id) => document.getElementById(id);
 
-      function showStatus(text) {
-        statusEl.textContent = text;
-        statusEl.hidden = false;
-      }
+  const CATEGORY = {
+    book: { label: 'Books', emoji: '📚' },
+    series: { label: 'Series', emoji: '📺' },
+    movie: { label: 'Movies', emoji: '🎬' },
+  };
+  const categoryOf = (name) => CATEGORY[name] || { label: 'Other', emoji: '🏷️' };
 
-      // Every value is written with textContent, so nothing from the list is read as HTML.
-      function render(rows) {
-        titleEl.textContent = rows[0].list_title;
-        for (const row of rows) {
-          // A list with nothing in it returns one row with no item.
-          if (!row.item_title) continue;
-          const li = document.createElement('li');
-          if (row.item_cover_url) {
-            const img = document.createElement('img');
-            img.src = row.item_cover_url;
-            img.alt = '';
-            img.loading = 'lazy';
-            li.append(img);
-          }
-          const text = document.createElement('div');
-          const title = document.createElement('div');
-          title.className = 'title';
-          title.textContent = row.item_title;
-          const meta = document.createElement('div');
-          meta.className = 'meta';
-          meta.textContent = [row.item_creator, row.item_year, row.item_category].filter(Boolean).join(' · ');
-          text.append(title, meta);
-          // The public note is written on purpose by the owner; the private note is never sent to this page.
-          if (row.item_public_note) {
-            const note = document.createElement('div');
-            note.className = 'public-note';
-            note.textContent = row.item_public_note;
-            text.append(note);
-          }
-          li.append(text);
-          listEl.append(li);
-        }
-        if (!listEl.children.length) showStatus('Nothing in this list yet.');
-      }
+  // Opening the app: the browser asks first. If the page is still visible a moment later, the app is probably not
+  // installed, so the App Store button appears. A visit that leaves the page cancels that.
+  let fallbackTimer = null;
+  function offerAppStore() {
+    const note = $('app-note');
+    note.textContent = '';
+    if (config.appStoreUrl) {
+      const a = document.createElement('a');
+      a.href = config.appStoreUrl;
+      a.textContent = 'Get Recs2 on the App Store';
+      note.append(a);
+    } else {
+      note.textContent = "Recs2 isn't in the App Store yet.";
+    }
+    note.hidden = false;
+  }
+  function wireAppButton(button, token) {
+    button.href = 'recs2://list?t=' + encodeURIComponent(token);
+    button.addEventListener('click', () => {
+      clearTimeout(fallbackTimer);
+      fallbackTimer = setTimeout(() => { if (!document.hidden) offerAppStore(); }, 1500);
+    });
+  }
+  document.addEventListener('visibilitychange', () => { if (document.hidden) clearTimeout(fallbackTimer); });
 
-      async function load() {
-        const token = new URLSearchParams(location.search).get('t') || '';
-        // The token is 32 hexadecimal characters (128 bits), as the server makes it.
-        if (!/^[0-9a-f]{32}$/.test(token)) {
-          showStatus("This link doesn't show a list.");
-          return;
-        }
-        showActions(token);
-        if (!config.supabaseUrl || !config.publishableKey || config.publishableKey === 'PLACEHOLDER') {
-          showStatus('The page is not connected yet.');
-          return;
-        }
-        try {
-          const response = await fetch(`${config.supabaseUrl}/rest/v1/rpc/get_public_list`, {
-            method: 'POST',
-            headers: {
-              apikey: config.publishableKey,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ p_token: token }),
-          });
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          const rows = await response.json();
-          // An unknown token and a revoked one look the same from here, on purpose.
-          if (rows.length === 0) {
-            showStatus('This list is no longer shared, or the link is wrong.');
-            return;
-          }
-          render(rows);
-        } catch (error) {
-          console.error('list not loaded', error);
-          showStatus("The list couldn't be loaded. Try again later.");
-        }
-      }
+  function showStatus(text) {
+    const status = $('status');
+    status.textContent = text;
+    status.hidden = false;
+  }
 
-      load();
-    })();
-  </script>
+  function initials(name) {
+    return name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('') || '•';
+  }
+
+  // Everything is written with textContent, so no text from the list is read as HTML.
+  function renderHeader(summary) {
+    const owner = summary.owner_name || '';
+    $('title').textContent = summary.list_title;
+    document.title = summary.list_title + ' · shared by ' + (owner || 'a Recs2 user');
+    $('initials').textContent = initials(owner || '?');
+    const line = $('owner');
+    line.textContent = '';
+    const by = document.createElement('span');
+    by.append('by ');
+    const strong = document.createElement('strong');
+    strong.textContent = owner || 'a Recs2 user';
+    by.append(strong, ' · ' + summary.item_count + (summary.item_count === 1 ? ' title' : ' titles'));
+    line.append(by);
+    if (summary.recent_count > 0) {
+      const badge = $('badge');
+      badge.textContent = '✨ ' + summary.recent_count + ' new this week';
+      badge.hidden = false;
+    }
+    $('cta-text').textContent = 'Follow ' + (owner ? owner + "'s" : 'this') +
+      ' list and get a ping when titles are added. Free in the iPhone app.';
+    $('content').hidden = false;
+    $('cta').hidden = false;
+  }
+
+  function renderItems(rows) {
+    const items = rows.filter((row) => row.item_title);
+    const counts = {};
+    items.forEach((row) => { counts[row.item_category] = (counts[row.item_category] || 0) + 1; });
+
+    const chips = $('chips');
+    const all = document.createElement('button');
+    all.className = 'chip';
+    all.type = 'button';
+    all.setAttribute('aria-pressed', 'true');
+    all.dataset.category = '';
+    all.textContent = 'All ' + items.length;
+    chips.append(all);
+    Object.keys(counts).forEach((name) => {
+      const cat = categoryOf(name);
+      const chip = document.createElement('button');
+      chip.className = 'chip';
+      chip.type = 'button';
+      chip.setAttribute('aria-pressed', 'false');
+      chip.dataset.category = name;
+      chip.textContent = cat.emoji + ' ' + cat.label + ' ' + counts[name];
+      chips.append(chip);
+    });
+    chips.hidden = items.length === 0;
+    chips.addEventListener('click', (event) => {
+      const chip = event.target.closest('.chip');
+      if (!chip) return;
+      chips.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', String(c === chip)));
+      const wanted = chip.dataset.category;
+      document.querySelectorAll('#items .card').forEach((card) => {
+        card.hidden = wanted !== '' && card.dataset.category !== wanted;
+      });
+    });
+
+    const list = $('items');
+    items.forEach((row) => {
+      const cat = categoryOf(row.item_category);
+      const li = document.createElement('li');
+      li.className = 'card';
+      li.dataset.category = row.item_category;
+      const tile = document.createElement('span');
+      tile.className = 'tile';
+      tile.setAttribute('aria-hidden', 'true');
+      tile.textContent = cat.emoji;
+      const body = document.createElement('div');
+      body.className = 'body';
+      const h2 = document.createElement('h2');
+      h2.textContent = row.item_title;
+      const meta = document.createElement('span');
+      meta.className = 'meta';
+      meta.textContent = [cat.label, row.item_creator, row.item_year].filter(Boolean).join(' · ');
+      body.append(h2, meta);
+      // The public note is written on purpose by the owner. The private note and the recommender's name never appear here.
+      if (row.item_public_note) {
+        const note = document.createElement('p');
+        note.className = 'note';
+        note.textContent = '“' + row.item_public_note + '”';
+        body.append(note);
+      }
+      li.append(tile, body);
+      list.append(li);
+    });
+    list.hidden = items.length === 0;
+    if (items.length === 0) showStatus('Nothing in this list yet.');
+  }
+
+  async function rpc(name, token) {
+    const response = await fetch(config.supabaseUrl + '/rest/v1/rpc/' + name, {
+      method: 'POST',
+      headers: { apikey: config.publishableKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_token: token }),
+    });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    return response.json();
+  }
+
+  async function load() {
+    const token = new URLSearchParams(location.search).get('t') || '';
+    // The token is 32 hexadecimal characters (128 bits), as the server makes it.
+    if (!/^[0-9a-f]{32}$/.test(token)) {
+      showStatus("This link doesn't show a list.");
+      return;
+    }
+    wireAppButton($('open-app'), token);
+    wireAppButton($('open-app-cta'), token);
+    if (!config.supabaseUrl || !config.publishableKey || config.publishableKey === 'PLACEHOLDER') {
+      showStatus('The page is not connected yet.');
+      return;
+    }
+    try {
+      const [summaryRows, rows] = await Promise.all([
+        rpc('get_public_list_summary', token),
+        rpc('get_public_list', token),
+      ]);
+      // An unknown token and a stopped one look the same from here, on purpose.
+      if (summaryRows.length === 0) {
+        showStatus('This list is no longer shared, or the link is wrong.');
+        return;
+      }
+      renderHeader(summaryRows[0]);
+      renderItems(rows);
+    } catch (error) {
+      console.error('list not loaded', error);
+      showStatus("The list couldn't be loaded. Try again later.");
+    }
+  }
+
+  load();
+})();
+</script>
 </body>
 </html>
