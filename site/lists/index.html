@@ -50,6 +50,7 @@
     }
     .title { font-weight: 600; }
     .meta { color: #6e6e73; font-size: 0.9rem; }
+    .public-note { margin-top: 6px; font-size: 0.95rem; }
     @media (prefers-color-scheme: dark) {
       body { background: #000; color: #f2f2f7; }
       .note, .meta { color: #98989d; }
@@ -101,6 +102,13 @@
           meta.className = 'meta';
           meta.textContent = [row.item_creator, row.item_year, row.item_category].filter(Boolean).join(' · ');
           text.append(title, meta);
+          // The public note is written on purpose by the owner; the private note is never sent to this page.
+          if (row.item_public_note) {
+            const note = document.createElement('div');
+            note.className = 'public-note';
+            note.textContent = row.item_public_note;
+            text.append(note);
+          }
           li.append(text);
           listEl.append(li);
         }
