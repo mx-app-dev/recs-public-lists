@@ -28,11 +28,13 @@ jobs:
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          APP_STORE_URL: ${{ vars.APP_STORE_URL }}
         run: |
           cat > site/config.js <<EOF
           window.PUBLIC_LIST_CONFIG = {
             supabaseUrl: "${SUPABASE_URL}",
             publishableKey: "${SUPABASE_PUBLISHABLE_KEY}",
+            appStoreUrl: "${APP_STORE_URL}",
           };
           EOF
 

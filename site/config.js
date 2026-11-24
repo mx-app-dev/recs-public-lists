@@ -3,4 +3,6 @@
 window.PUBLIC_LIST_CONFIG = {
   supabaseUrl: "https://PLACEHOLDER.supabase.co",
   publishableKey: "PLACEHOLDER",
+  // The App Store page, once the app is listed. Empty until then.
+  appStoreUrl: "",
 };
