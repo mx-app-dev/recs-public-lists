@@ -259,6 +259,18 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
     return response.json();
   }
 
+  // Counts one view of this list for its owner (step 9f). Sent once per page load, and only from a real page:
+  // link previews do not run scripts, so they are not counted. A failure is ignored; the page does not depend on it.
+  function recordView(token) {
+    fetch(config.supabaseUrl + '/rest/v1/rpc/record_list_view', {
+      method: 'POST',
+      headers: { apikey: config.publishableKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ p_token: token }),
+      keepalive: true,
+      referrerPolicy: 'no-referrer',
+    }).catch(() => {});
+  }
+
   async function load() {
     const token = new URLSearchParams(location.search).get('t') || '';
     // The token is 32 hexadecimal characters (128 bits), as the server makes it.
@@ -272,6 +284,7 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
       showStatus('The page is not connected yet.');
       return;
     }
+    recordView(token);
     try {
       const [summaryRows, rows] = await Promise.all([
         rpc('get_public_list_summary', token),
