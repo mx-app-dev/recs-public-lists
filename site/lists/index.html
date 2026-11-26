@@ -161,6 +161,8 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
   // Everything is written with textContent, so no text from the list is read as HTML.
   function renderHeader(summary) {
     const owner = summary.owner_name || '';
+    // The variant comes from the list kind: shared lists are Sage & Sand, collaboration lists Dusk Lavender.
+    document.body.dataset.theme = summary.list_kind === 'collaboration' ? 'collab' : 'shared';
     $('title').textContent = summary.list_title;
     document.title = summary.list_title + ' · shared by ' + (owner || 'a Recs2 user');
     $('initials').textContent = initials(owner || '?');
@@ -181,6 +183,13 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
       ' list and get a ping when titles are added. Free in the iPhone app.';
     $('content').hidden = false;
     $('cta').hidden = false;
+  }
+
+  // The day the owner added the item, in the reader's language. Empty when the date is missing or unreadable.
+  function formatAdded(value) {
+    const date = value ? new Date(value) : null;
+    if (!date || Number.isNaN(date.getTime())) return '';
+    return date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
   }
 
   function renderItems(rows) {
@@ -233,7 +242,8 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
       h2.textContent = row.item_title;
       const meta = document.createElement('span');
       meta.className = 'meta';
-      meta.textContent = [cat.label, row.item_creator, row.item_year].filter(Boolean).join(' · ');
+      const added = formatAdded(row.item_added_at);
+      meta.textContent = [cat.label, row.item_creator, row.item_year, added && 'Added ' + added].filter(Boolean).join(' · ');
       body.append(h2, meta);
       // The public note is written on purpose by the owner. The private note and the recommender's name never appear here.
       if (row.item_public_note) {
