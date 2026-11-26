@@ -73,6 +73,7 @@ h1{margin:0;font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-.02em
 .cta p{margin:0;font-size:15px;color:var(--text-2)}
 .cta .btn{width:100%;min-height:50px;font-size:16px;font-weight:700}
 .status{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;margin:0;color:var(--text-2)}
+[data-theme="collab"] .hero{gap:12px}
 .hint{font-size:13px;color:var(--muted);margin:0}
 .hint a{color:var(--link);font-weight:600}
 footer{padding:20px 16px 36px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 20px;font-size:13px}
@@ -101,8 +102,8 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
     <ul id="items" class="items" hidden></ul>
 
     <section id="cta" class="cta" hidden>
-      <span class="emoji" aria-hidden="true">🔔</span>
-      <h2>Don't miss new titles</h2>
+      <span id="cta-emoji" class="emoji" aria-hidden="true">🔔</span>
+      <h2 id="cta-heading">Don't miss new titles</h2>
       <p id="cta-text"></p>
       <a id="open-app-cta" class="btn" href="#">Subscribe</a>
     </section>
@@ -146,8 +147,8 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
     }
     note.hidden = false;
   }
-  function wireAppButton(button, token) {
-    button.href = 'recs2://list/' + encodeURIComponent(token);
+  function wireAppButton(button, url) {
+    button.href = url;
     button.addEventListener('click', () => {
       clearTimeout(fallbackTimer);
       fallbackTimer = setTimeout(() => { if (!document.hidden) offerAppStore(); }, 1500);
@@ -188,6 +189,43 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
     }
     $('cta-text').textContent = 'Follow ' + (owner ? owner + "'s" : 'this') +
       ' list and get a ping when titles are added. Free in the iPhone app.';
+    $('content').hidden = false;
+    $('cta').hidden = false;
+  }
+
+  // The collaboration variant (Dusk Lavender) for a list opened with its join link (step 9h). Visitors see the owner's
+  // name and counts only: no member names or initials, and no notes. The button opens the app's join flow.
+  function renderCollabHeader(summary, token) {
+    const owner = summary.owner_name || '';
+    const members = summary.member_count || 0;
+    const titles = summary.item_count || 0;
+    document.body.dataset.theme = 'collab';
+    $('title').textContent = summary.list_title;
+    document.title = summary.list_title + ' · Recs2 collaboration list';
+    $('initials').textContent = initials(owner || '?');
+    const line = $('owner');
+    line.textContent = '';
+    const by = document.createElement('span');
+    by.append('by ');
+    const strong = document.createElement('strong');
+    strong.textContent = owner || 'a Recs2 user';
+    by.append(
+      strong,
+      ' · ' + members + (members === 1 ? ' member' : ' members'),
+      ' · ' + titles + (titles === 1 ? ' title' : ' titles'),
+    );
+    line.append(by);
+    const badge = $('badge');
+    badge.textContent = '🤝 Collaboration list';
+    badge.hidden = false;
+    const joinUrl = 'recs2://join/' + encodeURIComponent(token);
+    $('open-app').textContent = 'Join';
+    $('open-app').href = joinUrl;
+    $('open-app-cta').href = joinUrl;
+    $('open-app-cta').textContent = 'Join the list';
+    $('cta-emoji').textContent = '💬';
+    $('cta-heading').textContent = 'Add titles, comment, react';
+    $('cta-text').textContent = 'Join to add your own titles and see what the others think. Comments are only visible to members.';
     $('content').hidden = false;
     $('cta').hidden = false;
   }
@@ -296,25 +334,36 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
       showStatus("This link doesn't show a list.");
       return;
     }
-    wireAppButton($('open-app'), token);
-    wireAppButton($('open-app-cta'), token);
+    const listUrl = 'recs2://list/' + encodeURIComponent(token);
+    wireAppButton($('open-app'), listUrl);
+    wireAppButton($('open-app-cta'), listUrl);
     if (!config.supabaseUrl || !config.publishableKey || config.publishableKey === 'PLACEHOLDER') {
       showStatus('The page is not connected yet.');
       return;
     }
-    recordView(token);
     try {
       const [summaryRows, rows] = await Promise.all([
         rpc('get_public_list_summary', token),
         rpc('get_public_list', token),
       ]);
-      // An unknown token and a stopped one look the same from here, on purpose.
-      if (summaryRows.length === 0) {
-        showStatus('This list is no longer shared, or the link is wrong.');
+      if (summaryRows.length > 0) {
+        recordView(token);
+        renderHeader(summaryRows[0]);
+        renderItems(rows);
         return;
       }
-      renderHeader(summaryRows[0]);
-      renderItems(rows);
+      // Not a public list: it may be a collaboration list opened with its join link (step 9h).
+      const [collabRows, collabItems] = await Promise.all([
+        rpc('get_collab_list_summary', token),
+        rpc('get_collab_list_items', token),
+      ]);
+      if (collabRows.length > 0) {
+        renderCollabHeader(collabRows[0], token);
+        renderItems(collabItems);
+        return;
+      }
+      // An unknown token and a stopped one look the same from here, on purpose.
+      showStatus('This list is no longer shared, or the link is wrong.');
     } catch (error) {
       console.error('list not loaded', error);
       showStatus("The list couldn't be loaded. Try again later.");
