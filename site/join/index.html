@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Join a list in Recs</title>
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; margin: 0; min-height: 100vh;
+         display: flex; align-items: center; justify-content: center; background: #f2f2f7; color: #111; }
+  main { max-width: 420px; padding: 32px 24px; text-align: center; }
+  h1 { font-size: 1.6rem; margin: 0 0 12px; }
+  p { color: #333; line-height: 1.45; }
+  a.button { display: inline-block; margin: 12px 0; padding: 14px 22px; border-radius: 14px;
+             background: #0a84ff; color: #fff; text-decoration: none; font-weight: 600; }
+  .muted { font-size: 0.9rem; color: #555; }
+  [hidden] { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Join a list in Recs</h1>
+  <p>Someone shares a list in Recs with you. Open it in the app and ask to join; the owner decides.</p>
+  <p id="invalid" hidden>This link is incomplete. Ask the owner for a new one.</p>
+  <div id="valid" hidden>
+    <a class="button" id="open" href="#">Open in Recs</a>
+    <p class="muted" id="fallback" hidden>
+      Recs didn't open. Open Recs on this phone, then tap this link again.
+    </p>
+  </div>
+  <p class="muted">Don't have Recs yet? The App Store link is coming soon.</p>
+</main>
+<script>
+(function () {
+  var token = (location.hash || "").slice(1);
+  // Join tokens are 32 hex characters (see supabase/migrations/0044_roles_and_join.sql).
+  var isValid = /^[a-z0-9]{8,64}$/i.test(token);
+  if (!isValid) {
+    document.getElementById("invalid").hidden = false;
+    return;
+  }
+  var deepLink = "recs2://join/" + token;
+  document.getElementById("valid").hidden = false;
+  document.getElementById("open").href = deepLink;
+
+  // Try to open the app straight away. If it is installed, the page goes to the background.
+  window.location.href = deepLink;
+  setTimeout(function () {
+    if (!document.hidden) {
+      document.getElementById("fallback").hidden = false;
+    }
+  }, 1500);
+})();
+</script>
+</body>
+</html>
