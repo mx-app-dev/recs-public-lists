@@ -7,8 +7,13 @@
 <meta name="referrer" content="no-referrer">
 <!-- Public lists are for the people who have the link, not for search engines. -->
 <meta name="robots" content="noindex">
+<!-- Link previews (WhatsApp, iMessage) read these tags from the HTML, so they are the same for every list. -->
+<meta property="og:title" content="Shared list · Recs2">
+<meta property="og:description" content="A list shared from the Recs2 app.">
+<meta property="og:type" content="website">
 <title>Shared list · Recs2</title>
 <style>
+/* Sage & Sand (shared list). The collaboration tokens are kept for step 9g. */
 :root,[data-theme="shared"]{
   --bg:#F4F1EA; --surface:#FFFFFF; --border:#E4DFD3; --chip-border:#D6D0C2;
   --text:#1F2A24; --text-2:#3E4A43; --muted:#5E6B63;
@@ -46,7 +51,7 @@ h1{margin:0;font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-.02em
 .owner{display:flex;align-items:center;gap:8px;font-size:15px;color:var(--muted)}
 .owner strong{color:var(--text)}
 .avatar{width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent-ink);
-  display:grid;place-items:center;font-size:12px;font-weight:700}
+  display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
 .chips{display:flex;gap:8px;overflow-x:auto;margin:0 -16px;padding:0 16px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--chip-border);
@@ -69,6 +74,7 @@ h1{margin:0;font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-.02em
 .cta .btn{width:100%;min-height:50px;font-size:16px;font-weight:700}
 .status{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px;margin:0;color:var(--text-2)}
 .hint{font-size:13px;color:var(--muted);margin:0}
+.hint a{color:var(--link);font-weight:600}
 footer{padding:20px 16px 36px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 20px;font-size:13px}
 footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
 </style>
@@ -116,6 +122,7 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
   const config = window.PUBLIC_LIST_CONFIG || {};
   const $ = (id) => document.getElementById(id);
 
+  // Books, series and movies are the only categories (step 3). Anything else shows as "Other".
   const CATEGORY = {
     book: { label: 'Books', emoji: '📚' },
     series: { label: 'Series', emoji: '📺' },
