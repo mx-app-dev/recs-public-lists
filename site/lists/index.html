@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<!-- The link's token is in the address; this stops it being sent to the images the page loads. -->
+<!-- The link's token is after "#", so it is not sent to this server. This also stops it being sent to the images the page loads. -->
 <meta name="referrer" content="no-referrer">
 <!-- Public lists are for the people who have the link, not for search engines. -->
 <meta name="robots" content="noindex">
@@ -140,7 +140,7 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
     note.hidden = false;
   }
   function wireAppButton(button, token) {
-    button.href = 'recs2://list?t=' + encodeURIComponent(token);
+    button.href = 'recs2://list/' + encodeURIComponent(token);
     button.addEventListener('click', () => {
       clearTimeout(fallbackTimer);
       fallbackTimer = setTimeout(() => { if (!document.hidden) offerAppStore(); }, 1500);
@@ -282,7 +282,8 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
   }
 
   async function load() {
-    const token = new URLSearchParams(location.search).get('t') || '';
+    // The token is after "#", so it is never sent to this server or written to its logs.
+    const token = location.hash.slice(1);
     // The token is 32 hexadecimal characters (128 bits), as the server makes it.
     if (!/^[0-9a-f]{32}$/.test(token)) {
       showStatus("This link doesn't show a list.");

@@ -25,7 +25,7 @@ visitor can read it in the page. What protects the data is the database (migrati
 
 **Settings → Pages → Build and deployment → Source: GitHub Actions.**
 
-After the first deploy, the page is at `https://mx-app-dev.github.io/recs-public-lists/lists/?t=<token>`.
+After the first deploy, the page is at `https://mx-app-dev.github.io/recs-public-lists/lists/#<token>`. The token is after `#`, so the browser does not send it to GitHub's servers.
 
 ## What the page shows
 
@@ -34,7 +34,7 @@ private note are never sent by the database function, so the page cannot show th
 
 ## Notes
 
-- The token is in the page address, so GitHub's logs and the visitor's own history contain it. The page sets
-  `referrer` to `no-referrer`, so cover images do not receive it.
+- The token is after `#`, so it is not sent to GitHub's servers or written to their logs. It is still in the visitor's
+  own browser history. The page sets `referrer` to `no-referrer`, so cover images do not receive it.
 - An unknown token and a stopped one show the same message, on purpose.
 - Cover images come from the catalog's sources; whether they may be shown is an open legal question (`docs/LEGAL.md`, question 8).
