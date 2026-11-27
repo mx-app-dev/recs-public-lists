@@ -77,7 +77,15 @@ h1{margin:0;font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-.02em
 .hint{font-size:13px;color:var(--muted);margin:0}
 .hint a{color:var(--link);font-weight:600}
 footer{padding:20px 16px 36px;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 20px;font-size:13px}
-footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
+footer a,footer button{color:var(--muted);min-height:32px;display:flex;align-items:center;background:none;border:0;padding:0;font:inherit;cursor:pointer}
+.report{margin:0 16px;display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:16px}
+.report label{font-size:13px;color:var(--muted)}
+.report select,.report textarea{font:inherit;font-size:15px;color:var(--text);background:var(--bg);border:1px solid var(--chip-border);border-radius:12px;padding:10px}
+.report textarea{min-height:80px;resize:vertical}
+.report button{min-height:44px;border:0;border-radius:999px;background:var(--accent);color:#fff;font:600 15px/1 -apple-system,system-ui,"Segoe UI",Roboto,sans-serif;cursor:pointer}
+.report button:disabled{opacity:.6}
+.report .cancel{background:none;color:var(--muted)}
+.report .counter{font-size:12px;color:var(--muted);text-align:right}
 </style>
 </head>
 <body data-theme="shared">
@@ -111,8 +119,28 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
     <p id="app-note" class="hint" hidden></p>
   </main>
 
+  <section id="report-panel" class="report" aria-labelledby="report-heading" hidden>
+    <h2 id="report-heading" style="margin:0;font-size:17px">Report this list</h2>
+    <p class="hint">Reports are anonymous: no name, no email.</p>
+    <form id="report-form">
+      <label for="report-reason">Reason</label>
+      <select id="report-reason" name="reason" required>
+        <option value="spam">Spam</option>
+        <option value="harassment">Harassment</option>
+        <option value="illegal">Illegal content</option>
+        <option value="other" selected>Something else</option>
+      </select>
+      <label for="report-note">Note (optional)</label>
+      <textarea id="report-note" name="note" maxlength="500" placeholder="What should we look at?"></textarea>
+      <div class="counter" id="report-counter">0 / 500</div>
+      <button id="report-send" class="send" type="submit">Send report</button>
+      <button id="report-cancel" class="cancel" type="button">Cancel</button>
+      <p id="report-status" role="status" class="hint"></p>
+    </form>
+  </section>
+
   <footer>
-    <a id="report" href="mailto:mrichter.appdev@gmail.com?subject=Report%20a%20shared%20list">Report this list</a>
+    <button id="report" type="button" aria-expanded="false" aria-controls="report-panel">Report this list</button>
     <a href="mailto:mrichter.appdev@gmail.com">Contact</a>
   </footer>
 </div>
@@ -326,6 +354,69 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
     }).catch(() => {});
   }
 
+  // Reports go to the database with the same rules as the app: a valid link, one of the four reasons, a note of up to
+  // 500 characters, and at most ten reports per list an hour. The link token is sent in the request body, not the URL.
+  let reportToken = null;
+  let reportRpc = null;
+  function setupReport(token, rpc, title) {
+    reportToken = token;
+    reportRpc = rpc;
+    $('report-heading').textContent = 'Report “' + (title || 'this list') + '”';
+  }
+
+  // The form is hidden until the visitor asks for it. Cancel closes it again and returns focus to the button.
+  function setReportOpen(open) {
+    $('report-panel').hidden = !open;
+    $('report').setAttribute('aria-expanded', String(open));
+    if (open) $('report-reason').focus();
+  }
+  $('report').addEventListener('click', () => setReportOpen($('report-panel').hidden));
+  $('report-cancel').addEventListener('click', () => {
+    setReportOpen(false);
+    $('report').focus();
+  });
+  $('report-note').addEventListener('input', () => {
+    $('report-counter').textContent = $('report-note').value.length + ' / 500';
+  });
+
+  $('report-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const status = $('report-status');
+    const send = $('report-send');
+    if (!reportToken || !reportRpc) {
+      status.textContent = "This list can't be reported right now.";
+      return;
+    }
+    send.disabled = true;
+    status.textContent = 'Sending…';
+    try {
+      const response = await fetch(config.supabaseUrl + '/rest/v1/rpc/' + reportRpc, {
+        method: 'POST',
+        headers: { apikey: config.publishableKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          p_token: reportToken,
+          p_reason: $('report-reason').value,
+          p_note: $('report-note').value.trim(),
+        }),
+        referrerPolicy: 'no-referrer',
+      });
+      if (response.ok) {
+        status.textContent = 'Thank you. Your report has been sent.';
+        $('report-form').reset();
+        $('report-counter').textContent = '0 / 500';
+      } else {
+        const body = await response.json().catch(() => ({}));
+        status.textContent = body.message === 'rate_limited'
+          ? 'Too many reports for this list recently. Please try again later.'
+          : "The report couldn't be sent. Please try again later.";
+      }
+    } catch (error) {
+      status.textContent = "The report couldn't be sent. Check your connection and try again.";
+    } finally {
+      send.disabled = false;
+    }
+  });
+
   async function load() {
     // The token is after "#", so it is never sent to this server or written to its logs.
     const token = location.hash.slice(1);
@@ -347,6 +438,7 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
         rpc('get_public_list', token),
       ]);
       if (summaryRows.length > 0) {
+        setupReport(token, 'report_public_list', summaryRows[0].list_title);
         recordView(token);
         renderHeader(summaryRows[0]);
         renderItems(rows);
@@ -358,6 +450,7 @@ footer a{color:var(--muted);min-height:32px;display:flex;align-items:center}
         rpc('get_collab_list_items', token),
       ]);
       if (collabRows.length > 0) {
+        setupReport(token, 'report_join_link', collabRows[0].list_title);
         renderCollabHeader(collabRows[0], token);
         renderItems(collabItems);
         return;
